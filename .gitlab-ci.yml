@@ -1,0 +1,31 @@
+# GitLab CI/CD Configuration
+image: python:3.9-slim
+
+stages:
+  - build
+  - test
+
+cache:
+  paths:
+    - .pip-cache/
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+# 检查依赖安装
+install_dependencies:
+  stage: build
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# 代码风格检查 (可选，如果后续添加 flake8/pylint)
+lint_code:
+  stage: test
+  script:
+    - pip install flake8
+    - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  allow_failure: true
